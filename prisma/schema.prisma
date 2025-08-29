@@ -1,0 +1,41 @@
+// Prisma schema for Supabase Postgres
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+model User {
+  id            String        @id @default(uuid())
+  email         String?       @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  sessions      ChatSession[]
+}
+
+model ChatSession {
+  id        String    @id @default(uuid())
+  title     String
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum MessageRole {
+  user
+  assistant
+}
+
+model Message {
+  id         String      @id @default(uuid())
+  sessionId  String
+  session    ChatSession @relation(fields: [sessionId], references: [id])
+  role       MessageRole
+  content    String
+  createdAt  DateTime    @default(now())
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
